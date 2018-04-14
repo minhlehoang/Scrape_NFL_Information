@@ -15,7 +15,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
@@ -28,12 +27,10 @@ public class Scraper {
 	private String url_string;
 	private String url_string2;
 	URLConnection urlConnection = null;
-	
 	// constructor
 	public Scraper (String url) throws IOException {
 		this.url = url;
 	} 
-	
 	// reads the data from a web page and searches for the string matches
 	public void parseData() throws IOException {
 		//Declare variables to store scraped values
@@ -50,6 +47,17 @@ public class Scraper {
 		String result = String.format("%-10s %-10s %-25s %-10s %-10s %-10s %-10s %-10s\n", "Pos", "Num", "Player Name", "Status", "TCKL", "SCK", "INT", "Team") + "\r\n";
 		result += String.format("%-10s %-10s %-25s %-10s %-10s %-10s %-10s %-10s\n", "---", "---", "-----------", "------", "----", "---", "---", "----") + "\r\n";
 		int i = 1;
+		
+		Pattern pat_pos = Pattern.compile("CB(?=</td>)|SAF(?=</td>)|DB(?=</td>)");
+		Pattern pat_num = Pattern.compile("<td class=\"tbdy\">\\d\\d</td><td><a href=\"/player|<td class=\"tbdy\"></td><td><a href=\"/player");
+		Pattern pat_playername = Pattern.compile("<td><a href=\"(.*?)profile\">(.*?)</a></td>");
+		Pattern pat_status = Pattern.compile("<td class=\"tbdy\">(.*?)</td><td class=\"ra\">[\\s]+TCKL");
+		Pattern pat_tckl = Pattern.compile("<td class=\"ra\">[\\s]+TCKL+[\\s]+</td>[\\s]*<td class=\"tbdy\">(.*?)</td>");
+		Pattern pat_sck = Pattern.compile("<td class=\"ra\">[\\s]+SCK+[\\s]+</td>[\\s]*<td class=\"tbdy\">(.*?)</td>");
+		Pattern pat_int = Pattern.compile("<td class=\"ra\">[\\s]+INT+[\\s]+</td>[\\s]*<td class=\"tbdy\">(.*?)</td>");
+		Pattern pat_team = Pattern.compile("<td class=\"tbdy1\"><a href=\"/teams/(.*?)</a></td></tr>");
+		
+		regex = new Regex(pat_pos, pat_num, pat_playername, pat_status, pat_tckl, pat_sck, pat_int, pat_team);
 			
 		url_string = "http://www.nfl.com/players/search?category=position&playerType=current&conference=ALL&d-447263-p=1&filter=defensiveback&conferenceAbbr=null";
 		java.net.URL url = new java.net.URL(url_string);
@@ -59,6 +67,7 @@ public class Scraper {
 			String line = input.nextLine();
 			string_concat = string_concat.concat(line);
 		}
+		input.close();
 		
 		Pattern pat_numpage = Pattern.compile("<span class=\"linkNavigation floatRight\">(.*?)next");
 		Matcher matcher_numpage = pat_numpage.matcher(string_concat);
@@ -80,23 +89,15 @@ public class Scraper {
 				string_concat2 = string_concat2.concat(line);
 			}
 			
-			Pattern pat_pos = Pattern.compile("CB(?=</td>)|SAF(?=</td>)|DB(?=</td>)");
-			Pattern pat_num = Pattern.compile("<td class=\"tbdy\">\\d\\d</td><td><a href=\"/player|<td class=\"tbdy\"></td><td><a href=\"/player");
-			Pattern pat_playername = Pattern.compile("<td><a href=\"(.*?)profile\">(.*?)</a></td>");
-			Pattern pat_status = Pattern.compile("<td class=\"tbdy\">(.*?)</td><td class=\"ra\">[\\s]+TCKL");
-			Pattern pat_tckl = Pattern.compile("<td class=\"ra\">[\\s]+TCKL+[\\s]+</td>[\\s]*<td class=\"tbdy\">(.*?)</td>");
-			Pattern pat_sck = Pattern.compile("<td class=\"ra\">[\\s]+SCK+[\\s]+</td>[\\s]*<td class=\"tbdy\">(.*?)</td>");
-			Pattern pat_int = Pattern.compile("<td class=\"ra\">[\\s]+INT+[\\s]+</td>[\\s]*<td class=\"tbdy\">(.*?)</td>");
-			Pattern pat_team = Pattern.compile("<td class=\"tbdy1\"><a href=\"/teams/(.*?)</a></td></tr>");
 			
-			Matcher matcher_pos = pat_pos.matcher(string_concat2);
-			Matcher matcher_num = pat_num.matcher(string_concat2);
-			Matcher matcher_playername = pat_playername.matcher(string_concat2);
-			Matcher matcher_status = pat_status.matcher(string_concat2);
-			Matcher matcher_tckl = pat_tckl.matcher(string_concat2);
-			Matcher matcher_sck = pat_sck.matcher(string_concat2);
-			Matcher matcher_int = pat_int.matcher(string_concat2);
-			Matcher matcher_team = pat_team.matcher(string_concat2);
+			Matcher matcher_pos = regex.getPos().matcher(string_concat2);
+			Matcher matcher_num = regex.getNum().matcher(string_concat2);
+			Matcher matcher_playername = regex.getLlayerName().matcher(string_concat2);
+			Matcher matcher_status = regex.getStatus().matcher(string_concat2);
+			Matcher matcher_tckl = regex.getTckl().matcher(string_concat2);
+			Matcher matcher_sck = regex.getSck().matcher(string_concat2);
+			Matcher matcher_int = regex.getIntt().matcher(string_concat2);
+			Matcher matcher_team = regex.getTeam().matcher(string_concat2);
 			
 			while(matcher_pos.find() && matcher_playername.find()&&matcher_num.find()&&matcher_status.find()&&matcher_tckl.find()&&matcher_sck.find()&&matcher_int.find()&&matcher_team.find()) {
 				pos = matcher_pos.group();
@@ -112,14 +113,13 @@ public class Scraper {
 					File file_output = new File("NFLStat.txt");
 					FileWriter fileWriter = new FileWriter(file_output);
 					fileWriter.write(result);
-					
 					fileWriter.flush();
 					fileWriter.close();
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
-			
+			input_2.close();
 		}
 		JOptionPane.showMessageDialog(null, "Done writting to text file");
 	}
@@ -127,16 +127,4 @@ public class Scraper {
 	public String display(String display){
 		return null;
 	}
-	
-	
-
 } //end class
-		
-		
-			
-
-	
-
-	
-	
-
