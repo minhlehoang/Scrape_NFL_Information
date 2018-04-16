@@ -1,31 +1,43 @@
+
+
+//****************************************
+//
+//			CIS 611	
+//			Spring 2018		
+//			
+//			Minh Le and Andy Carlson
+//
+//			PP04
+//
+//			Regex
+//			
+//			April 16, 2018
+//	
+//			Saved in LeCarlsonPP04.zip
+//
+//****************************************
+
 import java.awt.BorderLayout;
 import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.net.MalformedURLException;
-
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 
 
 public class UserGUI extends JPanel {
 	
-	
 	  private JButton scrapeButton;
 	  private JButton closeButton;
 	  private JLabel label;
-	  private JPanel main_panel;
-	  private JTextArea textarea;
+	  private JPanel textPanel;
+	  static JTextArea textarea;
 	  private JScrollPane jp;
 	  
 	  // add more UI components as needed
@@ -66,31 +78,42 @@ public class UserGUI extends JPanel {
 		  closeButton = new JButton("Close");
 		  label = new JLabel("Output");
 		  
-		  main_panel = new JPanel(new BorderLayout());
-		  textarea = new JTextArea(30,100);
+		  textPanel = new JPanel();
+		  textarea = new JTextArea();
+		  
+		  textarea = new JTextArea(20,110);
 		  textarea.setEditable(false);
-		  textarea.setLineWrap(true);
-		  textarea.setWrapStyleWord(true);
+		  textarea.setLineWrap(false);
+		  textarea.setWrapStyleWord(false);
+		  textarea.setFont(new Font("monospaced", Font.PLAIN, 12));
 		  jp = new JScrollPane(textarea);
 		  jp.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		  jp.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+		  jp.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		  textPanel.add(jp);
 		  
 	  }// end of creating objects method
 	  
 	  // Layouts the UI components as shown in the project document
 	  private void doTheLayout(){
-		  main_panel.add(scrapeButton, BorderLayout.NORTH);
-		  main_panel.add(textarea, BorderLayout.CENTER);
-		  main_panel.add(closeButton, BorderLayout.SOUTH);
-		  
-		  add(main_panel);
+		   JPanel top = new JPanel();
+		   JPanel center = new JPanel();
+		   JPanel bottom = new JPanel();
+		   setLayout( new BorderLayout());
+		   add(top, "North");
+		   add(center, "Center");
+		   add(bottom, "South");
+		  		  
+		  top.add(scrapeButton);
+		  center.add(textPanel);
+		  bottom.add(closeButton);
+
 	  }// end of Layout method
 
 	 
 	// Uses the Scraper object reference to return and display the data as shown in the project document 
 	 void scrape() throws IOException{
 		 scraper = new Scraper(url);
-		 scraper.parseData();
+		 scraper.parseData(null);
 	 }// end of scrape action event method
 	  
 	 
@@ -110,4 +133,14 @@ public class UserGUI extends JPanel {
 	   f.setVisible(true);
 	}// end of main method
 
+	public static JTextArea getTextarea() {
+		return textarea;
+	}
+
+	public static void setTextarea(JTextArea textarea) {
+		UserGUI.textarea = textarea;
+	}
+
+	
+	
 }// end of class
